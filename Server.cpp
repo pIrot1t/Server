@@ -62,7 +62,7 @@ string Server::GetMessage() {
 
 void Server::SendMessage(const char *_message) {
   bzero(message, MESSAGE_LENGTH);
-  strcpy(message, _message);
+  strncpy(message, _message, MESSAGE_LENGTH - 1);
   ssize_t bytes = write(connection, message, sizeof(message));
   if (bytes >= 0) {
     cout << "Data successfully sent to the client" << endl;

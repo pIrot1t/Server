@@ -11,7 +11,12 @@ int main()
 
     string mess;
 
-    while(server.StartServer() && server.Listening())
+    if (!server.StartServer())
+    {
+        return 1;
+    }
+
+    while(server.Listening())
     {
         mess = server.GetMessage();
 
