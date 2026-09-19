@@ -60,9 +60,9 @@ string Server::GetMessage() {
   return message;
 }
 
-void Server::SendMessage(char *_message) {
-  strcpy(message, _message);
+void Server::SendMessage(const char *_message) {
   bzero(message, MESSAGE_LENGTH);
+  strcpy(message, _message);
   ssize_t bytes = write(connection, message, sizeof(message));
   if (bytes >= 0) {
     cout << "Data successfully sent to the client" << endl;

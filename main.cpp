@@ -1,19 +1,26 @@
-#include "Server.h"
 #include <iostream>
 #include <string>
+#include "Server.h"
+
 
 using namespace std;
 
-int main() {
-  Server server;
+int main()
+{
+    Server server;
 
-  server.StartServer();
+    string mess;
 
-  server.Listening();
+    while(server.StartServer() && server.Listening())
+    {
+        mess = server.GetMessage();
 
-  cout << server.GetMessage() << endl;
+        cout << mess << endl;
 
-  server.SendMessage("Hi");
+        server.SendMessage("received");
+    }
 
-  server.StopServer();
+    server.StopServer();
+
+    return 0;
 }
