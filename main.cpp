@@ -1,3 +1,4 @@
+#include <cstring>
 #include <iostream>
 #include <string>
 #include "Server.h"
@@ -21,6 +22,11 @@ int main()
         mess = server.GetMessage();
 
         cout << mess << endl;
+
+        if (!strncmp(mess.c_str(), "end", 3))
+        {
+            break;
+        }
 
         server.SendMessage("received");
     }
