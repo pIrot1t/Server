@@ -9,5 +9,11 @@ int main() {
 
   server.StartServer();
 
+  server.Listening();
+
+  cout << server.GetMessage() << endl;
+
+  server.SendMessage("Hi");
+
   server.StopServer();
 }

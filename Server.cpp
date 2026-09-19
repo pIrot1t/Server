@@ -21,8 +21,19 @@ bool Server::StartServer() {
   if (bind_status == -1) {
     cout << "Socket binding failed" << endl;
     return false;
+  }
+
+  return true;
+}
+
+bool Server::Listening() {
+  connection_status = listen(socket_file_descriptor, 5);
+
+  if (connection_status == -1) {
+    cout << "Socket is unable to listen for new connection" << endl;
+    return 0;
   } else {
-    cout << "Server is listening for new connections" << endl;
+    cout << "Server is listening for new connection" << endl;
   }
 
   length = sizeof(client);
@@ -44,12 +55,16 @@ void Server::StopServer() {
 }
 
 string Server::GetMessage() {
-  explicit_bzero(message, MESSAGE_LENGTH);
+  bzero(message, MESSAGE_LENGTH);
   read(connection, message, sizeof(message));
   return message;
 }
 
-void Server::SendMessage(char *message) {
-  explicit_bzero(message, MESSAGE_LENGTH);
-  write(connection, message, sizeof(message));
+void Server::SendMessage(char *_message) {
+  strcpy(message, _message);
+  bzero(message, MESSAGE_LENGTH);
+  ssize_t bytes = write(connection, message, sizeof(message));
+  if (bytes >= 0) {
+    cout << "Data successfully sent to the client" << endl;
+  }
 }

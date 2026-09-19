@@ -21,6 +21,8 @@ public:
 
   void StopServer();
 
+  bool Listening();
+
   string GetMessage();
 
   void SendMessage(char *message);
