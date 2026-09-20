@@ -1,8 +1,9 @@
-#include <iostream>
+//#include <iostream>
 #include <string>
 #include <vector>
-#include "MessageManager.h"
 #include "Server.h"
+#include "MessageManager.h"
+#include "UserManager.h"
 
 
 using namespace std;
@@ -10,6 +11,7 @@ using namespace std;
 int main()
 {
     Server server;
+    UserManager userManager;
 
     vector<string> command;
 
@@ -41,17 +43,38 @@ int main()
             {
                 continue;
             }
-            cout << "Registartion: " << command[1] << " " << command[2] << endl;
+
+            if(userManager.Register(command[1], command[2]) == 1)
+            {
+                server.SendMessage(mpsen({"ERROR", "This name is using"}).c_str());
+            }
             server.SendMessage(mpsen({"SUCCESS", "Registartion success"}).c_str());
         }
         else if (command[0] == "AUTHORIZ")
         {
-            cout << "Authorization: " << command[1] << " " << command[2] << endl;
-            server.SendMessage(mpsen({"SUCCESS", "Authorization success"}).c_str());
+            if (command.size() < 3)
+            {
+                continue;
+            }
+
+            int id = userManager.Authoriz(command[1], command[2]);
+            if (id == -1)
+            {
+                server.SendMessage(mpsen({"ERROR", "Wrong name or password"}).c_str());
+            }
+            server.SendMessage(mpsen({"SUCCESS", "Authorization success", to_string(id)}).c_str());
         }
         else if (command[0] == "DELETEAC")
         {
-            cout << "Delete account: " << command[1] << " " << command[2] << endl;
+            if (command.size() < 3)
+            {
+                continue;
+            }
+            
+            if(userManager.Deleteac(command[1], command[2]) == 1)
+            {
+                server.SendMessage(mpsen({"ERROR", "Wrong name or password"}).c_str());
+            }
             server.SendMessage(mpsen({"SUCCESS", "Account deleted"}).c_str());
         }
         else

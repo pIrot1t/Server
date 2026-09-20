@@ -44,20 +44,19 @@ int UserManager::LoadLastID()
     return id;
 }
 
-void UserManager::SaveUser(User user, int id)
+void UserManager::SaveUser(User user)
 {
     fstream file;
 
-    if (!fs::exists("Users/" + to_string(id)))
+    if (!fs::exists("Users/" + to_string(user.id)))
     {
-        fs::create_directory("Users/" + to_string(id));
+        fs::create_directory("Users/" + to_string(user.id));
     }
 
-    file.open("Users/" + to_string(id) + "name.txt", ios::out | ios::trunc);
+    file.open("Users/" + to_string(user.id) + "/name.txt", ios::out | ios::trunc);
     file << user.name;
-    file.close();
 
-    file.open("Users/" + to_string(id) + "password.txt");
+    file.open("Users/" + to_string(user.id) + "/password.txt");
     file << user.password;
     file.close();
 }
@@ -68,7 +67,7 @@ UserManager::User* UserManager::LoadUser(string name)
     fstream file;
     int id = LoadLastID();
 
-    for (int i = 0; i <= id; i++)
+    for (int i = 0; i < id; i++)
     {
         file.open("Users/" + to_string(i) + "/name.txt", ios::in);
         file >> user.name;
@@ -80,25 +79,29 @@ UserManager::User* UserManager::LoadUser(string name)
 
             user.id = i;
 
+            file.close();
+
             return &user;
         }
     }
 
+    file.close();
+
     return nullptr;
 }
 
-int UserManager::Register(User user)
+int UserManager::Register(string name, string password)
 {
     fstream file;
     int id = LoadLastID();
 
     for (int i = 0; i < id; i++)
     {
-        string name;
-        file.open("Users/" + to_string(id) + "name.txt", ios::in);
-        file >> name;
+        string _name;
+        file.open("Users/" + to_string(id) + "/name.txt", ios::in);
+        file >> _name;
 
-        if (user.name == name)
+        if (name == _name)
         {
             file.close();
             return 1;
@@ -107,9 +110,47 @@ int UserManager::Register(User user)
         file.close();
     }
 
-    SaveUser(user, id);
+    SaveUser({id, name, password});
 
     SaveLastID(id);
 
     return 0;
+}
+
+int UserManager::Authoriz(string name, string password)
+{
+    User* _user = LoadUser(name);
+    
+    if (_user == nullptr)
+    {
+        return -1;
+    }
+    else
+    {
+        if (_user->password == password)
+        {
+            return _user->id;
+        }
+
+        return 1;
+    }
+}
+
+int UserManager::Deleteac(string name, string password)
+{
+    User* _user = LoadUser(name);
+
+    if (_user == nullptr)
+    {
+        return 1;
+    }
+    else
+    {
+        if (_user->password == password)
+        {
+            return 0;
+        }
+
+        return 1;
+    }
 }

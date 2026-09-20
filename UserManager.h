@@ -16,6 +16,7 @@ private:
         std::vector<std::string> contacts;
 
         User() : id(-1), name(""), password("") {};
+        User(int id, std::string name, std::string password) : id(id), name(name), password(password) {};
         User(std::string name, std::string password) : name(name), password(password) {};
         User(std::string name, std::string password, std::vector<std::string> contacts) :
             name(name), password(password), contacts(contacts) {}; 
@@ -31,12 +32,12 @@ public:
 
     User* LoadUser(std::string name);
 
-    void SaveUser(User user, int id);
+    void SaveUser(User user);
 
-    int Register(User user);
+    int Register(std::string name, std::string password);
 
-    int Authoriz(User user);
+    int Authoriz(std::string name, std::string password);
 
-    int Deleteac(User user);
+    int Deleteac(std::string name, std::string password);
 
 };
