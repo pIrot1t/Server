@@ -1,7 +1,7 @@
 #include <iostream>
 #include <string>
 #include <vector>
-#include "MessageManager.cpp"
+#include "MessageManager.h"
 #include "Server.h"
 
 
