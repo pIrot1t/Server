@@ -1,5 +1,4 @@
-#include <string>
-#include <vector>
+#include "MessageManager.h"
 
 using namespace std;
 
@@ -9,23 +8,26 @@ vector<string> mprec(string message)
 
     string section;
 
-    int i = 0;
-    while (i < message.size())
+    for (char sim : message)
     {
-        if (message[i] == *"|")
+        if (sim == '|')
         {
             command.push_back(section);
-            i++;
+            section.clear();
         }
-
-        section += message[i];
-
-        if (section == "\n")
+        else if (sim == '\n')
         {
             break;
         }
+        else
+        {
+            section += sim;
+        }
+    }
 
-        i++;
+    if (!section.empty())
+    {
+        command.push_back(section);
     }
 
     return command;
@@ -37,10 +39,10 @@ string mpsen(vector<string> result)
 
     for (vector<string>::iterator it = result.begin(); it < result.end(); it++)
     {
-        message += *it + "|";
+        message += *it + '|';
     }
 
-    message += "\n";
+    message += '\n';
 
     return message;
 }

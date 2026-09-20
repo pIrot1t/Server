@@ -26,8 +26,12 @@ int main()
     while(true)
     {
         command = mprec(server.GetMessage());
-
-        if (command[0] == "END")
+        
+        if (command.empty())
+        {
+            continue;
+        }
+        else if (command[0] == "END")
         {
             break;
         }
@@ -44,14 +48,12 @@ int main()
         else if (command[0] == "DELETEAC")
         {
             cout << "Delete account: " << command[1] << " " << command[2] << endl;
-            server.SendMessage(mpsen({"SUCCECS"}).c_str());
+            server.SendMessage(mpsen({"SUCCECS", "Account deleted"}).c_str());
         }
         else
         {
             server.SendMessage(mpsen({"ERROR", "The command is not recognized"}).c_str());
         }
-
-        server.SendMessage("received");
     }
 
     server.StopServer();
