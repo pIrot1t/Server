@@ -1,6 +1,7 @@
-#include <cstring>
 #include <iostream>
 #include <string>
+#include <vector>
+#include "MessageManager.cpp"
 #include "Server.h"
 
 
@@ -10,22 +11,44 @@ int main()
 {
     Server server;
 
-    string mess;
+    vector<string> command;
 
     if (!server.StartServer())
     {
         return 1;
     }
 
-    while(server.Listening())
+    if (!server.Listening())
     {
-        mess = server.GetMessage();
+        return 1;
+    }
 
-        cout << mess << endl;
+    while(true)
+    {
+        command = mprec(server.GetMessage());
 
-        if (!strncmp(mess.c_str(), "end", 3))
+        if (command[0] == "END")
         {
             break;
+        }
+        else if (command[0] == "REGISTER")
+        {
+            cout << "Registartion: " << command[1] << " " << command[2] << endl;
+            server.SendMessage(mpsen({"SUCCESS", "Registartion success"}).c_str());
+        }
+        else if (command[0] == "AUTHORIZ")
+        {
+            cout << "Authorization: " << command[1] << " " << command[2] << endl;
+            server.SendMessage(mpsen({"SUCCESS", "Authorization success"}).c_str());
+        }
+        else if (command[0] == "DELETEAC")
+        {
+            cout << "Delete account: " << command[1] << " " << command[2] << endl;
+            server.SendMessage(mpsen({"SUCCECS"}).c_str());
+        }
+        else
+        {
+            server.SendMessage(mpsen({"ERROR", "The command is not recognized"}).c_str());
         }
 
         server.SendMessage("received");
