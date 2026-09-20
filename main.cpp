@@ -37,6 +37,10 @@ int main()
         }
         else if (command[0] == "REGISTER")
         {
+            if (command.size() < 3)
+            {
+                continue;
+            }
             cout << "Registartion: " << command[1] << " " << command[2] << endl;
             server.SendMessage(mpsen({"SUCCESS", "Registartion success"}).c_str());
         }
@@ -48,7 +52,7 @@ int main()
         else if (command[0] == "DELETEAC")
         {
             cout << "Delete account: " << command[1] << " " << command[2] << endl;
-            server.SendMessage(mpsen({"SUCCECS", "Account deleted"}).c_str());
+            server.SendMessage(mpsen({"SUCCESS", "Account deleted"}).c_str());
         }
         else
         {
