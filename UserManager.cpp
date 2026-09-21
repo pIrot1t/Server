@@ -55,13 +55,14 @@ void UserManager::SaveUser(User user)
 
     file.open("Users/" + to_string(user.id) + "/name.txt", ios::out | ios::trunc);
     file << user.name;
+    file.close();
 
-    file.open("Users/" + to_string(user.id) + "/password.txt");
+    file.open("Users/" + to_string(user.id) + "/password.txt", ios::out | ios::trunc);
     file << user.password;
     file.close();
 }
 
-UserManager::User* UserManager::LoadUser(string name)
+UserManager::User UserManager::LoadUser(string name)
 {
     User user;
     fstream file;
@@ -71,6 +72,7 @@ UserManager::User* UserManager::LoadUser(string name)
     {
         file.open("Users/" + to_string(i) + "/name.txt", ios::in);
         file >> user.name;
+        file.close();
 
         if (user.name == name)
         {
@@ -81,13 +83,11 @@ UserManager::User* UserManager::LoadUser(string name)
 
             file.close();
 
-            return &user;
+            return user;
         }
     }
 
-    file.close();
-
-    return nullptr;
+    return User();
 }
 
 int UserManager::Register(string name, string password)
@@ -98,7 +98,7 @@ int UserManager::Register(string name, string password)
     for (int i = 0; i < id; i++)
     {
         string _name;
-        file.open("Users/" + to_string(id) + "/name.txt", ios::in);
+        file.open("Users/" + to_string(i) + "/name.txt", ios::in);
         file >> _name;
 
         if (name == _name)
@@ -119,38 +119,43 @@ int UserManager::Register(string name, string password)
 
 int UserManager::Authoriz(string name, string password)
 {
-    User* _user = LoadUser(name);
+    User user = LoadUser(name);
     
-    if (_user == nullptr)
+    if (user.id == -1)
     {
         return -1;
     }
     else
     {
-        if (_user->password == password)
+        if (user.password == password)
         {
-            return _user->id;
+            return user.id;
         }
-
-        return 1;
+        else
+        {
+            return -2;
+        }
     }
 }
 
 int UserManager::Deleteac(string name, string password)
 {
-    User* _user = LoadUser(name);
+    User user = LoadUser(name);
 
-    if (_user == nullptr)
+    if (user.id == -1)
     {
         return 1;
     }
     else
     {
-        if (_user->password == password)
+        if (user.password == password)
         {
+            fs::remove_all("Users/" + to_string(user.id));
             return 0;
         }
-
-        return 1;
+        else
+        {
+            return 1;
+        }
     }
 }

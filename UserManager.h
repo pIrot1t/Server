@@ -30,7 +30,7 @@ public:
 
     int LoadLastID();
 
-    User* LoadUser(std::string name);
+    User LoadUser(std::string name);
 
     void SaveUser(User user);
 

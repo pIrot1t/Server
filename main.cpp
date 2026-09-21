@@ -48,7 +48,10 @@ int main()
             {
                 server.SendMessage(mpsen({"ERROR", "This name is using"}).c_str());
             }
-            server.SendMessage(mpsen({"SUCCESS", "Registartion success"}).c_str());
+            else
+            {
+                server.SendMessage(mpsen({"SUCCESS", "Registartion success"}).c_str());
+            }
         }
         else if (command[0] == "AUTHORIZ")
         {
@@ -58,11 +61,14 @@ int main()
             }
 
             int id = userManager.Authoriz(command[1], command[2]);
-            if (id == -1)
+            if (id >= 0)
             {
                 server.SendMessage(mpsen({"ERROR", "Wrong name or password"}).c_str());
             }
-            server.SendMessage(mpsen({"SUCCESS", "Authorization success", to_string(id)}).c_str());
+            else
+            {
+                server.SendMessage(mpsen({"SUCCESS", "Authorization success", to_string(id)}).c_str());
+            }
         }
         else if (command[0] == "DELETEAC")
         {
@@ -75,7 +81,10 @@ int main()
             {
                 server.SendMessage(mpsen({"ERROR", "Wrong name or password"}).c_str());
             }
-            server.SendMessage(mpsen({"SUCCESS", "Account deleted"}).c_str());
+            else
+            {
+                server.SendMessage(mpsen({"SUCCESS", "Account deleted"}).c_str());
+            }
         }
         else
         {
