@@ -1,6 +1,7 @@
 #include <iostream>
 #include <string>
 #include <vector>
+#include <csignal>
 #include "Server.h"
 #include "MessageManager.h"
 #include "UserManager.h"
@@ -27,7 +28,13 @@ int main()
 
     while(true)
     {
-        command = mprec(server.GetMessage());
+        signal(SIGPIPE, SIG_IGN);
+        string raw = server.GetMessage();
+        if (raw.empty())
+        {
+            break;
+        }
+        command = mprec(raw);
         
         if (command.empty())
         {
