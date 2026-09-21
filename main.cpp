@@ -50,7 +50,7 @@ int main()
             }
             else
             {
-                server.SendMessage(mpsen({"SUCCESS", "Registartion success"}).c_str());
+                server.SendMessage(mpsen({"SUCCESS", "Registration success"}).c_str());
             }
         }
         else if (command[0] == "AUTHORIZ")
@@ -61,7 +61,7 @@ int main()
             }
 
             int id = userManager.Authoriz(command[1], command[2]);
-            if (id >= 0)
+            if (id < 0)
             {
                 server.SendMessage(mpsen({"ERROR", "Wrong name or password"}).c_str());
             }
