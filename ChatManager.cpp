@@ -30,17 +30,17 @@ int ChatManager::CreateChat(string chatName)
     fstream file;
     int id;
 
-    file.open("Chat/LastID.txt", ios::in);
+    file.open("Chats/LastID.txt", ios::in);
     file >> id;
     file.close();
 
-    fs::create_directory("Chat/" + to_string(id));
+    fs::create_directory("Chats/" + to_string(id));
 
-    file.open("Chat/" + to_string(id) + "/chatname.txt", ios::out | ios::trunc);
+    file.open("Chats/" + to_string(id) + "/chatname.txt", ios::out | ios::trunc);
     file << chatName;
     file.close();
 
-    file.open("Chat/LastID.txt", ios::out | ios::trunc);
+    file.open("Chats/LastID.txt", ios::out | ios::trunc);
     file << id + 1;
     file.close();
 
@@ -53,7 +53,7 @@ vector<int> ChatManager::GetChats(int userID)
     int lastID;
     vector<int> chatsID;
 
-    file.open("Chat/LastID.txt", ios::in);
+    file.open("Chats/LastID.txt", ios::in);
     file >> lastID;
     file.close();
 
@@ -65,7 +65,7 @@ vector<int> ChatManager::GetChats(int userID)
         {
             if (id == userID)
             {
-                chatsID.push_back(id);
+                chatsID.push_back(i);
             }
         }
         file.close();
@@ -97,15 +97,15 @@ int ChatManager::AddUserToChat(int chatID, int userID)
         return 1;
     }
 
-    if (!fs::exists("Chats/" + to_string(chatID) + "/users.txt"))
-    {
-        ofstream("Chats/" + to_string(chatID) + "/users.txt");
-    }
-
     fstream file;
 
-    file.open("Chats/" + to_string(chatID) + "/users.txt", ios::out);
-    file.seekp(0, ios_base::end);
+    if (!fs::exists("Chats/" + to_string(chatID) + "/users.txt"))
+    {
+        file.open("Chats/" + to_string(chatID) + "/users.txt");
+        file.close();
+    }
+
+    file.open("Chats/" + to_string(chatID) + "/users.txt", ios::out | ios::app);
     file << userID << endl;
     file.close();
 
@@ -114,20 +114,20 @@ int ChatManager::AddUserToChat(int chatID, int userID)
 
 void ChatManager::AddMessage(int chatID, int userID, string message)
 {
-    if (!fs::exists("Chats/" + to_string(chatID) + "/messages.txt"))
-    {
-        ofstream("Chats/" + to_string(chatID) + "/messages.txt");
-    }
-
     fstream file;
     string username;
+
+    if (!fs::exists("Chats/" + to_string(chatID) + "/messages.txt"))
+    {
+        file.open("Chats/" + to_string(chatID) + "/messages.txt");
+        file.close();
+    }
 
     file.open("Users/" + to_string(userID) + "/name.txt", ios::in);
     file >> username;
     file.close();
 
-    file.open("Chats/" + to_string(chatID) + "/messages.txt", ios::out);
-    file.seekp(0, ios_base::end);
+    file.open("Chats/" + to_string(chatID) + "/messages.txt", ios::out | ios::app);
     file << username << " > " << message << endl;
     file.close();
 }
@@ -137,9 +137,9 @@ vector<string> ChatManager::GetMessages(int chatID)
     fstream file;
     vector<string> messages;
 
-    file.open("Chats/" + to_string(chatID) + "messages.txt", ios::in);
+    file.open("Chats/" + to_string(chatID) + "/messages.txt", ios::in);
     string message;
-    while (file >> message)
+    while (getline(file, message))
     {
         messages.push_back(message);
     }
