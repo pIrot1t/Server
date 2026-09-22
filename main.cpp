@@ -96,8 +96,9 @@ int main()
         }
         else if (command[0] == "CREATECHAT")
         {
-            if (command.size() < 3)
+            if (command.size() < 3 || !isNumber(command[1]) || !isNumber(command[2]))
             {
+                server.SendMessage(mpsen({"ERROR", "Invalid arguments"}).c_str());
                 continue;
             }
 
@@ -108,8 +109,9 @@ int main()
         }
         else if (command[0] == "GETCHATS")
         {
-            if (command.size() < 2)
+            if (command.size() < 2 || !isNumber(command[1]))
             {
+                server.SendMessage(mpsen({"ERROR", "Invalid arguments"}).c_str());
                 continue;
             }
 
@@ -124,8 +126,9 @@ int main()
         }
         else if (command[0] == "ADDUSERCHAT")
         {
-            if (command.size() < 2)
+            if (command.size() < 3 || !isNumber(command[1]) || !isNumber(command[2]))
             {
+                server.SendMessage(mpsen({"ERROR", "Invalid arguments"}).c_str());
                 continue;
             }
 
@@ -140,8 +143,9 @@ int main()
         }
         else if (command[0] == "SENDMSG")
         {
-            if (command.size() < 4)
+            if (command.size() < 4 || !isNumber(command[1]) || !isNumber(command[2]))
             {
+                server.SendMessage(mpsen({"ERROR", "Invalid arguments"}).c_str());
                 continue;
             }
 
@@ -149,8 +153,9 @@ int main()
         }
         else if (command[0] == "GETMSGS")
         {
-            if (command.size() < 2)
+            if (command.size() < 2 || !isNumber(command[1]))
             {
+                server.SendMessage(mpsen({"ERROR", "Invalid arguments"}).c_str());
                 continue;
             }
 

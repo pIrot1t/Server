@@ -80,7 +80,7 @@ string ChatManager::GetChatName(int chatID)
     string chatname;
 
     file.open("Chats/" + to_string(chatID) + "/chatname.txt", ios::in);
-    file >> chatname;
+    getline(file, chatname);
     file.close();
 
     return chatname;
