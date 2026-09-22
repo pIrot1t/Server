@@ -18,9 +18,7 @@ UserManager::UserManager()
     {
         fstream file;
         file.open("Users/LastID.txt", ios::out | ios::trunc);
-
         file << 0;
-
         file.close();
     }
 }
