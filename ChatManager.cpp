@@ -74,6 +74,18 @@ vector<int> ChatManager::GetChats(int userID)
     return chatsID;
 }
 
+string ChatManager::GetChatName(int chatID)
+{
+    fstream file;
+    string chatname;
+
+    file.open("Chats/" + to_string(chatID) + "/chatname.txt", ios::in);
+    file >> chatname;
+    file.close();
+
+    return chatname;
+}
+
 vector<int> ChatManager::GetUsersChat(int chatID)
 {
     fstream file;

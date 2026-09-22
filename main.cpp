@@ -5,7 +5,7 @@
 #include "Server.h"
 #include "MessageManager.h"
 #include "UserManager.h"
-
+#include "ChatManager.h"
 
 using namespace std;
 
@@ -13,6 +13,7 @@ int main()
 {
     Server server;
     UserManager userManager;
+    ChatManager chatManager;
 
     vector<string> command;
 
@@ -60,7 +61,7 @@ int main()
                 server.SendMessage(mpsen({"SUCCESS", "Registration success"}).c_str());
             }
         }
-        else if (command[0] == "AUTHORIZ")
+        else if (command[0] == "AUTHORIZE")
         {
             if (command.size() < 3)
             {
@@ -77,7 +78,7 @@ int main()
                 server.SendMessage(mpsen({"SUCCESS", "Authorization success", to_string(id)}).c_str());
             }
         }
-        else if (command[0] == "DELETEAC")
+        else if (command[0] == "DELACCOUNT")
         {
             if (command.size() < 3)
             {
@@ -92,6 +93,75 @@ int main()
             {
                 server.SendMessage(mpsen({"SUCCESS", "Account deleted"}).c_str());
             }
+        }
+        else if (command[0] == "CREATECHAT")
+        {
+            if (command.size() < 3)
+            {
+                continue;
+            }
+
+            int chatID = chatManager.CreateChat(command[1]);
+            chatManager.AddUserToChat(chatID, stoi(command[2]));
+
+            server.SendMessage(mpsen({"SUCCESS", "Chat created", to_string(chatID)}).c_str());
+        }
+        else if (command[0] == "GETCHATS")
+        {
+            if (command.size() < 2)
+            {
+                continue;
+            }
+
+            vector<int> chatsID = chatManager.GetChats(stoi(command[1]));
+
+            for (int chatID : chatsID)
+            {
+                server.SendMessage(mpsen({to_string(chatID), chatManager.GetChatName(chatID)}).c_str());
+            }
+
+            server.SendMessage(mpsen({"ENDLIST"}).c_str());
+        }
+        else if (command[0] == "ADDUSERCHAT")
+        {
+            if (command.size() < 2)
+            {
+                continue;
+            }
+
+            if (chatManager.AddUserToChat(stoi(command[1]), stoi(command[2])) == 1)
+            {
+                server.SendMessage(mpsen({"ERROR", "Such a user does not exists"}).c_str());
+            }
+            else
+            {
+                server.SendMessage(mpsen({"SUCCESS", "User has been added"}).c_str());
+            }
+        }
+        else if (command[0] == "SENDMSG")
+        {
+            if (command.size() < 4)
+            {
+                continue;
+            }
+
+            chatManager.AddMessage(stoi(command[1]), stoi(command[2]), command[3]);
+        }
+        else if (command[0] == "GETMSGS")
+        {
+            if (command.size() < 2)
+            {
+                continue;
+            }
+
+            vector<string> messages = chatManager.GetMessages(stoi(command[1]));
+
+            for (string message : messages)
+            {
+                server.SendMessage(mpsen({message}).c_str());
+            }
+
+            server.SendMessage(mpsen({"ENDMSGS"}).c_str());
         }
         else
         {
