@@ -96,7 +96,7 @@ int main()
         }
         else if (command[0] == "CREATECHAT")
         {
-            if (command.size() < 3 || !isNumber(command[1]) || !isNumber(command[2]))
+            if (command.size() < 3 || !isNumber(command[2]))
             {
                 server.SendMessage(mpsen({"ERROR", "Invalid arguments"}).c_str());
                 continue;
