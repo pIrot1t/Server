@@ -69,7 +69,7 @@ UserManager::User UserManager::LoadUser(string name)
     for (int i = 0; i < id; i++)
     {
         file.open("Users/" + to_string(i) + "/name.txt", ios::in);
-        file >> user.name;
+        getline(file, user.name);
         file.close();
 
         if (user.name == name)
