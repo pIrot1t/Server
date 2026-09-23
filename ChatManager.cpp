@@ -86,20 +86,26 @@ string ChatManager::GetChatName(int chatID)
     return chatname;
 }
 
-vector<int> ChatManager::GetUsersChat(int chatID)
+vector<string> ChatManager::GetUsersChat(int chatID)
 {
     fstream file;
-    vector<int> usersID;
+    vector<string> users;
 
     file.open("Chats/" + to_string(chatID) + "/users.txt", ios::in);
     int id;
+    string name;
     while (file >> id)
     {
-        usersID.push_back(id);
+        file.close();
+        file.open("Users/" + to_string(id) + "/name.txt", ios::in);
+        file >> name;
+        file.close();
+        users.push_back(to_string(id) + "    " + name);
+        file.open("Chats/" + to_string(chatID) + "/users.txt", ios::in);
     }
     file.close();
 
-    return usersID;
+    return users;
 }
 
 int ChatManager::AddUserToChat(int chatID, int userID)

@@ -124,6 +124,18 @@ int main()
 
             server.SendMessage(mpsen({"ENDLIST"}).c_str());
         }
+        else if (command[0] == "GETCHATNAME")
+        {
+            if (command.size() < 2 || !isNumber(command[1]))
+            {
+                server.SendMessage(mpsen({"ERROR", "Invalid arguments"}).c_str());
+                continue;
+            }
+
+            string chatname = chatManager.GetChatName(stoi(command[1]));
+
+            server.SendMessage(mpsen({"SUCCESS", chatname}).c_str());
+        }
         else if (command[0] == "ADDUSERCHAT")
         {
             if (command.size() < 3 || !isNumber(command[1]) || !isNumber(command[2]))
@@ -140,6 +152,23 @@ int main()
             {
                 server.SendMessage(mpsen({"SUCCESS", "User has been added"}).c_str());
             }
+        }
+        else if (command[0] == "GETUSERSCHAT")
+        {
+            if (command.size() < 2 || !isNumber(command[1]))
+            {
+                server.SendMessage(mpsen({"ERROR", "Invalid arguments"}).c_str());
+                continue;
+            }
+
+            vector<string> users = chatManager.GetUsersChat(stoi(command[1]));
+
+            for (string user : users)
+            {
+                server.SendMessage(mpsen({user}).c_str());
+            }
+
+            server.SendMessage(mpsen({"ENDLIST"}).c_str());
         }
         else if (command[0] == "SENDMSG")
         {

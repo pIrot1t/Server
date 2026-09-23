@@ -14,7 +14,7 @@ public:
 
     std::string GetChatName(int chatID);
 
-    std::vector<int> GetUsersChat(int chatID);
+    std::vector<std::string> GetUsersChat(int chatID);
 
     int AddUserToChat(int chatID, int userID);
 
