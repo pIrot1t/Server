@@ -104,7 +104,7 @@ vector<string> ChatManager::GetUsersChat(int chatID)
     for (int uid : ids)
     {
         file.open("Users/" + to_string(uid) + "/name.txt", ios::in);
-        if (file >> name)
+        if (getline(file, name))
         {
             users.push_back(to_string(uid) + "    " + name);
         }
