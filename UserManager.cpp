@@ -6,6 +6,12 @@ UserManager::UserManager()
 {
     const char* db_password = getenv("MYSQL_PASSWORD");
 
+    if (db_password == nullptr)
+    {
+        cout << "Error: MYSQL_PASSWORD is not set" << endl;
+        return;
+    }
+
 	if (mysql_init(&mysql) == nullptr)
     {
 		cout << "Error: can't create MySQL-descriptor" << endl;
@@ -69,8 +75,15 @@ int UserManager::Register(string name, string pass_hash)
     if (mysql_stmt_execute(stmt) != 0)
     {
         cout << "Execute error: " << mysql_stmt_error(stmt) << endl;
+        
+        if (mysql_stmt_errno(stmt) == 1062)
+        {
+            mysql_stmt_close(stmt);
+            return 1;
+        }
+
         mysql_stmt_close(stmt);
-        return 1;
+        return 2;
     }
 
     mysql_stmt_close(stmt);
@@ -94,8 +107,8 @@ int UserManager::Authoriz(string name, string pass_hash)
         return -1;
     }
 
-    MYSQL_BIND input_bind[2];
-    memset(input_bind, 0, sizeof(bind));
+    MYSQL_BIND bind[2];
+    memset(bind, 0, sizeof(bind));
 
     unsigned long name_len = name.length();
     input_bind[0].buffer_type = MYSQL_TYPE_STRING;
@@ -154,7 +167,7 @@ int UserManager::Authoriz(string name, string pass_hash)
     return user_id;
 }
 
-int UserManager::Delteac(string name, string pass_hash)
+int UserManager::Deleteac(string name, string pass_hash)
 {
     const char* sql = "DELETE FROM users WHERE name = ? AND pass_hash = ?";
     MYSQL_STMT* stmt = mysql_stmt_init(&mysql);
@@ -199,6 +212,13 @@ int UserManager::Delteac(string name, string pass_hash)
 		return 1;
 	}
 
+    my_ulonglong affected = mysql_stmt_affected_rows(stmt);
     mysql_stmt_close(stmt);
+
+    if (affected == 0)
+    {
+        return 1;
+    }
+
     return 0;
 }
