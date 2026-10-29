@@ -11,10 +11,6 @@ UserManager::UserManager()
         cout << "Error: MYSQL_PASSWORD is not set" << endl;
         return;
     }
-    else
-    {
-        connected = true;
-    }
 
 	if (mysql_init(&mysql) == nullptr)
     {
@@ -30,6 +26,7 @@ UserManager::UserManager()
 	else 
     {
 		cout << "Success!" << endl;
+        connected = true;
 	}
  
 	mysql_set_character_set(&mysql, "utf8mb4");
@@ -182,14 +179,14 @@ int UserManager::Deleteac(string name, string pass_hash)
     MYSQL_STMT* stmt = mysql_stmt_init(&mysql);
     if (!stmt)
     {
-        return 1;
+        return 2;
     }
 
     if (mysql_stmt_prepare(stmt, sql, strlen(sql)) != 0)
     {
         cerr << "Prepare error: " << mysql_stmt_error(stmt) << endl;
         mysql_stmt_close(stmt);
-        return 1;
+        return 2;
     }
 
     MYSQL_BIND bind[2];
@@ -211,14 +208,14 @@ int UserManager::Deleteac(string name, string pass_hash)
 	{
 		cout << "Bind error: " << mysql_stmt_error(stmt) << endl;
 		mysql_stmt_close(stmt);
-		return 1;
+		return 2;
 	}
 
 	if (mysql_stmt_execute(stmt) != 0)
 	{
 		cout << "Execute error: " << mysql_stmt_error(stmt) << endl;
 		mysql_stmt_close(stmt);
-		return 1;
+		return 2;
 	}
 
     my_ulonglong affected = mysql_stmt_affected_rows(stmt);
