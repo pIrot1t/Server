@@ -10,6 +10,7 @@ private:
     MYSQL mysql;
     MYSQL_RES* res;
     MYSQL_ROW row;
+    bool connected = false;
 
 public:
 

@@ -14,17 +14,18 @@ UserManager::UserManager()
     else
     {
         connected = true;
-        cout << "Success!" << endl;
     }
 
 	if (mysql_init(&mysql) == nullptr)
     {
 		cout << "Error: can't create MySQL-descriptor" << endl;
+        return;
 	}
  
 	if (!mysql_real_connect(&mysql, "localhost", "root", db_password, "testdb", NULL, NULL, 0)) 
     {
 		cout << "Error: can't connect to database " << mysql_error(&mysql) << endl;
+        return;
 	}
 	else 
     {
