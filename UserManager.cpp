@@ -11,7 +11,7 @@ UserManager::UserManager()
 		cout << "Error: can't create MySQL-descriptor" << endl;
 	}
  
-	if (!mysql_real_connect(&mysql, "localhost", "root", "a657833zb", "testdb", NULL, NULL, 0)) 
+	if (!mysql_real_connect(&mysql, "localhost", "root", db_password, "testdb", NULL, NULL, 0)) 
     {
 		cout << "Error: can't connect to database " << mysql_error(&mysql) << endl;
 	}
@@ -40,7 +40,7 @@ int UserManager::Register(string name, string pass_hash)
 
     if (mysql_stmt_prepare(stmt, sql, strlen(sql)) != 0)
     {
-        std::cerr << "Prepare error: " << mysql_stmt_error(stmt) << std::endl;
+        cerr << "Prepare error: " << mysql_stmt_error(stmt) << endl;
         mysql_stmt_close(stmt);
         return 1;
     }
@@ -49,13 +49,12 @@ int UserManager::Register(string name, string pass_hash)
     memset(bind, 0, sizeof(bind));
 
     unsigned long name_len = name.length();
-    unsigned long pass_len = pass_hash.length();
-
     bind[0].buffer_type = MYSQL_TYPE_STRING;
     bind[0].buffer = (void*)name.c_str();
     bind[0].buffer_length = name_len;
     bind[0].length = &name_len;
 
+    unsigned long pass_len = pass_hash.length();
     bind[1].buffer_type = MYSQL_TYPE_STRING;
     bind[1].buffer = (void*)pass_hash.c_str();
     bind[1].buffer_length = pass_len;
@@ -90,44 +89,43 @@ int UserManager::Authoriz(string name, string pass_hash)
 
     if (mysql_stmt_prepare(stmt, sql, strlen(sql)) != 0)
     {
-        std::cerr << "Prepare error: " << mysql_stmt_error(stmt) << '\n';
+        cerr << "Prepare error: " << mysql_stmt_error(stmt) << endl;
         mysql_stmt_close(stmt);
         return -1;
     }
 
     MYSQL_BIND input_bind[2];
-    memset(input_bind, 0, sizeof(input_bind));
+    memset(input_bind, 0, sizeof(bind));
 
     unsigned long name_len = name.length();
-    unsigned long pass_len = pass_hash.length();
-
     input_bind[0].buffer_type = MYSQL_TYPE_STRING;
     input_bind[0].buffer = (void*)name.c_str();
     input_bind[0].buffer_length = name_len;
     input_bind[0].length = &name_len;
 
+    unsigned long pass_len = pass_hash.length();
     input_bind[1].buffer_type = MYSQL_TYPE_STRING;
     input_bind[1].buffer = (void*)pass_hash.c_str();
     input_bind[1].buffer_length = pass_len;
     input_bind[1].length = &pass_len;
 
-    if (mysql_stmt_bind_param(stmt, input_bind) != 0)
+    if (mysql_stmt_bind_param(stmt, bind) != 0)
     {
-        std::cerr << "Bind error: " << mysql_stmt_error(stmt) << '\n';
+        cerr << "Bind error: " << mysql_stmt_error(stmt) << endl;
         mysql_stmt_close(stmt);
         return -1;
     }
 
     if (mysql_stmt_execute(stmt) != 0)
     {
-        std::cerr << "Execute error: " << mysql_stmt_error(stmt) << '\n';
+        cerr << "Execute error: " << mysql_stmt_error(stmt) << endl;
         mysql_stmt_close(stmt);
         return -1;
     }
 
     if (mysql_stmt_store_result(stmt) != 0)
     {
-        std::cerr << "Store result error: " << mysql_stmt_error(stmt) << '\n';
+        cerr << "Store result error: " << mysql_stmt_error(stmt) << endl;
         mysql_stmt_close(stmt);
         return -1;
     }
@@ -139,25 +137,68 @@ int UserManager::Authoriz(string name, string pass_hash)
 
     result_bind[0].buffer_type = MYSQL_TYPE_LONG;
     result_bind[0].buffer = &user_id;
-    result_bind[0].is_null = nullptr;
-    result_bind[0].error = nullptr;
 
     if (mysql_stmt_bind_result(stmt, result_bind) != 0)
     {
-        std::cerr << "Bind result error: " << mysql_stmt_error(stmt) << '\n';
+        cerr << "Bind result error: " << mysql_stmt_error(stmt) << endl;
         mysql_stmt_close(stmt);
         return -1;
     }
 
-    if (mysql_stmt_fetch(stmt) == 0)
-    {
-
-    }
-    else
+    if (mysql_stmt_fetch(stmt) != 0)
     {
         user_id = -1;
     }
 
     mysql_stmt_close(stmt);
     return user_id;
+}
+
+int UserManager::Delteac(string name, string pass_hash)
+{
+    const char* sql = "DELETE FROM users WHERE name = ? AND pass_hash = ?";
+    MYSQL_STMT* stmt = mysql_stmt_init(&mysql);
+    if (!stmt)
+    {
+        return 1;
+    }
+
+    if (mysql_stmt_prepare(stmt, sql, strlen(sql)) != 0)
+    {
+        cerr << "Prepare error: " << mysql_stmt_error(stmt) << endl;
+        mysql_stmt_close(stmt);
+        return 1;
+    }
+
+    MYSQL_BIND bind[2];
+	memset(bind, 0, sizeof(bind));
+
+	unsigned long name_len = name.length();
+	bind[0].buffer_type = MYSQL_TYPE_STRING;
+	bind[0].buffer = (void*)name.c_str();
+	bind[0].buffer_length = name_len;
+	bind[0].length = &name_len;
+
+	unsigned long pass_len = pass_hash.length();
+	bind[1].buffer_type = MYSQL_TYPE_STRING;
+	bind[1].buffer = (void*)pass_hash.c_str();
+	bind[1].buffer_length = pass_len;
+	bind[1].length = &pass_len;
+
+	if (mysql_stmt_bind_param(stmt, bind) != 0)
+	{
+		cout << "Bind error: " << mysql_stmt_error(stmt) << endl;
+		mysql_stmt_close(stmt);
+		return 1;
+	}
+
+	if (mysql_stmt_execute(stmt) != 0)
+	{
+		cout << "Execute error: " << mysql_stmt_error(stmt) << endl;
+		mysql_stmt_close(stmt);
+		return 1;
+	}
+
+    mysql_stmt_close(stmt);
+    return 0;
 }
