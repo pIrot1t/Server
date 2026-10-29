@@ -11,6 +11,11 @@ UserManager::UserManager()
         cout << "Error: MYSQL_PASSWORD is not set" << endl;
         return;
     }
+    else
+    {
+        connected = true;
+        cout << "Success!" << endl;
+    }
 
 	if (mysql_init(&mysql) == nullptr)
     {
@@ -32,7 +37,10 @@ UserManager::UserManager()
 
 UserManager::~UserManager()
 {
-    mysql_close(&mysql);
+    if (connected)
+    {
+        mysql_close(&mysql);
+    }
 }
 
 int UserManager::Register(string name, string pass_hash)
@@ -41,14 +49,14 @@ int UserManager::Register(string name, string pass_hash)
     MYSQL_STMT* stmt = mysql_stmt_init(&mysql);
     if (!stmt)
     {
-        return 1;
+        return 2;
     }
 
     if (mysql_stmt_prepare(stmt, sql, strlen(sql)) != 0)
     {
         cerr << "Prepare error: " << mysql_stmt_error(stmt) << endl;
         mysql_stmt_close(stmt);
-        return 1;
+        return 2;
     }
 
     MYSQL_BIND bind[2];
@@ -69,7 +77,7 @@ int UserManager::Register(string name, string pass_hash)
     if (mysql_stmt_bind_param(stmt, bind) != 0) {
         cout << "Bind error: " << mysql_stmt_error(stmt) << endl;
         mysql_stmt_close(stmt);
-        return 1;
+        return 2;
     }
     
     if (mysql_stmt_execute(stmt) != 0)
@@ -111,16 +119,16 @@ int UserManager::Authoriz(string name, string pass_hash)
     memset(bind, 0, sizeof(bind));
 
     unsigned long name_len = name.length();
-    input_bind[0].buffer_type = MYSQL_TYPE_STRING;
-    input_bind[0].buffer = (void*)name.c_str();
-    input_bind[0].buffer_length = name_len;
-    input_bind[0].length = &name_len;
+    bind[0].buffer_type = MYSQL_TYPE_STRING;
+    bind[0].buffer = (void*)name.c_str();
+    bind[0].buffer_length = name_len;
+    bind[0].length = &name_len;
 
     unsigned long pass_len = pass_hash.length();
-    input_bind[1].buffer_type = MYSQL_TYPE_STRING;
-    input_bind[1].buffer = (void*)pass_hash.c_str();
-    input_bind[1].buffer_length = pass_len;
-    input_bind[1].length = &pass_len;
+    bind[1].buffer_type = MYSQL_TYPE_STRING;
+    bind[1].buffer = (void*)pass_hash.c_str();
+    bind[1].buffer_length = pass_len;
+    bind[1].length = &pass_len;
 
     if (mysql_stmt_bind_param(stmt, bind) != 0)
     {
