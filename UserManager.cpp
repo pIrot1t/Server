@@ -4,8 +4,7 @@ using namespace std;
 
 UserManager::UserManager()
 {
-    mysql_init(&mysql);
-	if (&mysql == nullptr)
+	if (mysql_init(&mysql) == nullptr)
     {
 		cout << "Error: can't create MySQL-descriptor" << endl;
 	}
@@ -30,8 +29,8 @@ UserManager::~UserManager()
 
 int UserManager::Register(string name, string pass_hash)
 {
-    const char* sql = "INSERT INTO users (name, age) VALUES (?, ?)";
-    MYSQL_STMT* stmt = mysql_stmt_init(conn);
+    const char* sql = "INSERT INTO users (name, pass_hash) VALUES (?, ?)";
+    MYSQL_STMT* stmt = mysql_stmt_init(mysql);
     if (!stmt)
     {
         return 1;
@@ -39,7 +38,7 @@ int UserManager::Register(string name, string pass_hash)
 
     if (mysql_stmt_prepare(stmt, sql, strlen(sql)) != 0)
     {
-        cout << "Prepare error: " << mysql_stmt_error(stmt) << endl;
+        std::cerr << "Prepare error: " << mysql_stmt_error(stmt) << std::endl;
         mysql_stmt_close(stmt);
         return 1;
     }
@@ -47,30 +46,70 @@ int UserManager::Register(string name, string pass_hash)
     MYSQL_BIND bind[2];
     memset(bind, 0, sizeof(bind));
 
-    unsigned long name_len = strlen(name);
+    unsigned long name_len = name.length();
     bind[0].buffer_type = MYSQL_TYPE_STRING;
-    bind[0].buffer = (void*)name;
+    bind[0].buffer = (void*)name.c_str();
     bind[0].buffer_length = name_len;
     bind[0].length = &name_len;
 
-    unsigned long pass_len = strlen(pass_hash);
+    unsigned long pass_len = pass_hash.length();
     bind[1].buffer_type = MYSQL_TYPE_STRING;
-    bind[1].buffer = (void*)pass_hash;
+    bind[1].buffer = (void*)pass_hash.c_str();
     bind[1].buffer_length = pass_len;
     bind[1].length = &pass_len;
 
     if (mysql_stmt_bind_param(stmt, bind) != 0) {
         cout << "Bind error: " << mysql_stmt_error(stmt) << endl;
+        mysql_stmt_close(stmt);
+        return 1;
     }
     else
     {
         if (mysql_stmt_execute(stmt) != 0)
         {
             cout << "Execute error: " << mysql_stmt_error(stmt) << endl;
+            mysql_stmt_close(stmt);
+            return 1;
         }
     }
 
     mysql_stmt_close(stmt);
-
     return 0;
+}
+
+int UserManager::Authoriz(string name, string pass_hash)
+{
+    const char* sql = "SELECT id FROM users WHERE name = ? AND pass_hash = ?";
+    MYSQL_STMT* stmt = mysql_stmt_init(mysql);
+    if (!stmt)
+    {
+        return 1;
+    }
+
+    if (mysql_stmt_prepare(stmt, sql, strlen(sql)) != 0)
+    {
+        std::cerr << "Prepare error: " << mysql_stmt_error(stmt) << std::endl;
+        mysql_stmt_close(stmt);
+        return 1;
+    }
+
+    MYSQL_BIND result_bind[1];
+    memset(result_bind, 0, sizeof(result_bind));
+
+    int user_id = -1;
+    result_bind[0].buffer_type = MYSQL_TYPE_LONG;
+    result_bind[0].buffer = &user_id;
+
+    mysql_stmt_bind_result(stmt. result_bind);
+    if (mysql_stmt_fetch(stmt) == 0)
+    {
+
+    }
+    else
+    {
+        user_id = -1;
+    }
+
+    mysql_stmt_close(stmt);
+    return user_id;
 }
