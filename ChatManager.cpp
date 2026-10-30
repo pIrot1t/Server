@@ -85,3 +85,52 @@ int ChatManager::CreateChat(string name)
     mysql_stmt_close(stmt);
     return chat_id;
 }
+
+int ChatManager::AddUserToChat(int chatID, int userID)
+{
+    const char* sql = "INSERT INTO chat_users (chat_id, user_id) VALUES (?, ?)";
+    MYSQL_STMT* stmt = mysql_stmt_init(&mysql);
+    if (!stmt)
+    {
+        return -1;
+    }
+
+    if (mysql_stmt_prepare(stmt, sql, srtlen(sql)) != 0)
+    {
+        cerr << "Prepare error: " << mysql_stmt_error(stmt) << endl;
+        mysql_stmt_close(stmt);
+        return -1;
+    }
+
+    MYSQL_BIND bind[2];
+    memset(bind, 0, sizeof(bind));
+
+    bind[0].buffer_type = MYSQL_TYPE_LONG;
+    bind[0].buffer = &chatID;
+
+    bind[1].buffer_type = MYSQL_TYPE_LONG;
+    bind[1].buffer = &userID;
+
+    if (mysql_stmt_bind_param(stmt, bind) != 0)
+    {
+        cerr << "Bind error: " << mysql_stmt_error(stmt) << endl;
+        mysql_stmt_close(stmt);
+        return -1;
+    }
+
+    if (mysql_stmt_execute(stmt) != 0)
+    {
+        if (mysql_stmt_errno(stmt) == 1062)
+        {
+            mysql_stmt_close(stmt);
+            return 1;
+        }
+
+        cerr << "Execute error: " << mysql_stmt_error(stmt) << endl;
+        mysql_stmt_close(stmt);
+        return -1;
+    }
+
+    mysql_stmt_close(stmt);
+    return 0;
+}
