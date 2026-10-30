@@ -27,9 +27,10 @@ int main()
         return 1;
     }
 
+    signal(SIGPIPE, SIG_IGN);
+
     while(true)
     {
-        signal(SIGPIPE, SIG_IGN);
         string raw = server.GetMessage();
         if (raw.empty())
         {
@@ -52,13 +53,19 @@ int main()
                 continue;
             }
 
-            if(userManager.Register(command[1], command[2]) == 1)
+            int result = userManager.Register(command[1], command[2]);
+
+            if (result == 0)
+            {
+                server.SendMessage(mpsen({"SUCCESS", "Registration success"}).c_str());
+            }
+            else if (result == 1)
             {
                 server.SendMessage(mpsen({"ERROR", "This name is using"}).c_str());
             }
             else
             {
-                server.SendMessage(mpsen({"SUCCESS", "Registration success"}).c_str());
+                server.SendMessage(mpsen({"ERROR", "Database error"}).c_str());
             }
         }
         else if (command[0] == "AUTHORIZE")
@@ -69,6 +76,7 @@ int main()
             }
 
             int id = userManager.Authoriz(command[1], command[2]);
+
             if (id < 0)
             {
                 server.SendMessage(mpsen({"ERROR", "Wrong name or password"}).c_str());
@@ -85,13 +93,19 @@ int main()
                 continue;
             }
             
-            if(userManager.Deleteac(command[1], command[2]) == 1)
+            int result = userManager.Deleteac(command[1], command[2]);
+
+            if (result == 0)
+            {
+                server.SendMessage(mpsen({"SUCCESS", "Account deleted"}).c_str());
+            }
+            else if (result == 1)
             {
                 server.SendMessage(mpsen({"ERROR", "Wrong name or password"}).c_str());
             }
             else
             {
-                server.SendMessage(mpsen({"SUCCESS", "Account deleted"}).c_str());
+                server.SendMessage(mpsen({"ERROR", "Database error"}).c_str());
             }
         }
         else if (command[0] == "CREATECHAT")
@@ -103,7 +117,20 @@ int main()
             }
 
             int chatID = chatManager.CreateChat(command[1]);
-            chatManager.AddUserToChat(chatID, stoi(command[2]));
+
+            if (chatID < 0)
+            {
+                server.SendMessage(mpsen({"ERROR", "Database error"}).c_str());
+                continue;
+            }
+
+            int result = chatManager.AddUserToChat(chatID, stoi(command[2]));
+
+            if (result != 0)
+            {
+                server.SendMessage(mpsen({"ERROR", "Chat created, but user was not added"}).c_str());
+                continue;
+            }
 
             server.SendMessage(mpsen({"SUCCESS", "Chat created", to_string(chatID)}).c_str());
         }
@@ -144,13 +171,19 @@ int main()
                 continue;
             }
 
-            if (chatManager.AddUserToChat(stoi(command[1]), stoi(command[2])) == 1)
+            int result = chatManager.AddUserToChat(stoi(command[1]), stoi(command[2]));
+
+            if (result == 0)
             {
-                server.SendMessage(mpsen({"ERROR", "Such a user does not exists"}).c_str());
+                server.SendMessage(mpsen({"SUCCESS", "User has been added"}).c_str());
+            }
+            else if (result == 1)
+            {
+                server.SendMessage(mpsen({"ERROR", "User is already in this chat"}).c_str());
             }
             else
             {
-                server.SendMessage(mpsen({"SUCCESS", "User has been added"}).c_str());
+                server.SendMessage(mpsen({"ERROR", "Database error"}).c_str());
             }
         }
         else if (command[0] == "GETUSERSCHAT")
@@ -163,7 +196,7 @@ int main()
 
             vector<string> users = chatManager.GetUsersChat(stoi(command[1]));
 
-            for (string user : users)
+            for (const string& user : users)
             {
                 server.SendMessage(mpsen({user}).c_str());
             }
@@ -178,7 +211,16 @@ int main()
                 continue;
             }
 
-            chatManager.AddMessage(stoi(command[1]), stoi(command[2]), command[3]);
+            int result = chatManager.AddMessage(stoi(command[1]), stoi(command[2]), command[3]);
+
+            if (result == 0)
+            {
+                server.SendMessage(mpsen({"SUCCESS", "Message sent"}).c_str());
+            }
+            else
+            {
+                server.SendMessage(mpsen({"ERROR", "Database error"}).c_str());
+            }
         }
         else if (command[0] == "GETMSGS")
         {
@@ -190,7 +232,7 @@ int main()
 
             vector<string> messages = chatManager.GetMessages(stoi(command[1]));
 
-            for (string message : messages)
+            for (const string& message : messages)
             {
                 server.SendMessage(mpsen({message}).c_str());
             }
