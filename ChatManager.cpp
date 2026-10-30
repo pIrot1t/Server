@@ -80,32 +80,7 @@ int ChatManager::CreateChat(string name)
         return -1;
     }
 
-    if (mysql_stmt_store_result(stmt) != 0)
-    {
-        cerr << "Store result error: " << mysql_stmt_error(stmt) << endl;
-        mysql_stmt_close(stmt);
-        return -1;
-    }
-
-    int chat_id = -1;
-
-    MYSQL_BIND result_bind[1];
-    memset(result_bind, 0, sizeof(result_bind));
-
-    result_bind[0].buffer_type = MYSQL_TYPE_LONG;
-    result_bind[0].buffer = &chat_id;
-
-    if (mysql_stmt_bind_result(stmt, result_bind) != 0)
-    {
-        cerr << "Bind result error: " << mysql_stmt_error(stmt) << endl;
-        mysql_stmt_close(stmt);
-        return -1;
-    }
-
-    if (mysql_stmt_fetch(stmt) != 0)
-    {
-        chat_id = -1;
-    }
+    int chat_id = (int)mysql_stmt_insert_id(stmt);
 
     mysql_stmt_close(stmt);
     return chat_id;
