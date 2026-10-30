@@ -282,7 +282,7 @@ vector<string> ChatManager::GetUsersChat(int chatID)
     vector<string> users;
 
     const char* sql = "SELECT u.name FROM chat_users cu "
-        "JOIN users u ON u.id = cu.user.id WHERE cu.chat_id = ?";
+        "JOIN users u ON u.id = cu.user_id WHERE cu.chat_id = ?";
 
     MYSQL_STMT* stmt = mysql_stmt_init(&mysql);
     if (!stmt)
