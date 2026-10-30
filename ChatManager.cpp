@@ -1,173 +1,112 @@
 #include "ChatManager.h"
-#include <iostream>
-#include <fstream>
-#include <filesystem>
-#include <string>
-#include <vector>
 
 using namespace std;
 
-namespace fs = filesystem;
-
 ChatManager::ChatManager()
 {
-    if (!fs::exists("Chats"))
+    const char* db_password = getenv("MYSQL_PASSWORD");
+
+    if (db_password == nullptr)
     {
-        fs::create_directory("Chats");
+        cout << "Error: MYSQL_PASSWORD is not set" << endl;
+        return;
     }
 
-    if (!fs::exists("Chats/LastID.txt"))
+	if (mysql_init(&mysql) == nullptr)
     {
-        fstream file;
-        file.open("Chats/LastID.txt", ios::out | ios::trunc);
-        file << 0;
-        file.close();
+		cout << "Error: can't create MySQL-descriptor" << endl;
+        return;
+	}
+ 
+	if (!mysql_real_connect(&mysql, "localhost", "root", db_password, "myMessenger", NULL, NULL, 0)) 
+    {
+		cout << "Error: can't connect to database " << mysql_error(&mysql) << endl;
+        return;
+	}
+	else 
+    {
+		cout << "Success!" << endl;
+        connected = true;
+	}
+ 
+	mysql_set_character_set(&mysql, "utf8mb4");
+	cout << "connection characterset: " << mysql_character_set_name(&mysql) << endl;
+}
+
+ChatManager::~ChatManager()
+{
+    if (connected)
+    {
+        mysql_close(&mysql);
     }
 }
 
-int ChatManager::CreateChat(string chatName)
+int ChatManager::CreateChat(string name)
 {
-    fstream file;
-    int id;
-
-    file.open("Chats/LastID.txt", ios::in);
-    file >> id;
-    file.close();
-
-    fs::create_directory("Chats/" + to_string(id));
-
-    file.open("Chats/" + to_string(id) + "/chatname.txt", ios::out | ios::trunc);
-    file << chatName;
-    file.close();
-
-    file.open("Chats/LastID.txt", ios::out | ios::trunc);
-    file << id + 1;
-    file.close();
-
-    return id;
-}
-
-vector<int> ChatManager::GetChats(int userID)
-{
-    fstream file;
-    int lastID;
-    vector<int> chatsID;
-
-    file.open("Chats/LastID.txt", ios::in);
-    file >> lastID;
-    file.close();
-
-    for (int i = 0; i < lastID; i++)
+    const char* sql = "INSERT INTO chats (name) VALUES (?)";
+    MYSQL_STMT* stmt = mysql_stmt_init(&mysql);
+    if (!stmt)
     {
-        file.open("Chats/" + to_string(i) + "/users.txt", ios::in);
-        int id;
-        while (file >> id)
-        {
-            if (id == userID)
-            {
-                chatsID.push_back(i);
-            }
-        }
-        file.close();
+        return -1;
     }
 
-    return chatsID;
-}
-
-string ChatManager::GetChatName(int chatID)
-{
-    fstream file;
-    string chatname;
-
-    file.open("Chats/" + to_string(chatID) + "/chatname.txt", ios::in);
-    getline(file, chatname);
-    file.close();
-
-    return chatname;
-}
-
-vector<string> ChatManager::GetUsersChat(int chatID)
-{
-    fstream file;
-    vector<int> ids;
-    vector<string> users;
-
-    file.open("Chats/" + to_string(chatID) + "/users.txt", ios::in);
-    int id;
-    while (file >> id)
+    if (mysql_stmt_prepare(stmt, sql, strlen(sql)) != 0)
     {
-        ids.push_back(id);
-    }
-    file.close();
-
-    string name;
-    for (int uid : ids)
-    {
-        file.open("Users/" + to_string(uid) + "/name.txt", ios::in);
-        if (getline(file, name))
-        {
-            users.push_back(to_string(uid) + "    " + name);
-        }
-        file.close();
+        cerr << "Prepare error: " << mysql_stmt_error(stmt) << endl;
+        mysql_stmt_close(stmt);
+        return -1;
     }
 
-    return users;
-}
+    MYSQL_BIND bind[1];
+    memset(bind, 0, sizeof(bind));
 
-int ChatManager::AddUserToChat(int chatID, int userID)
-{
-    if (!fs::exists("Users/" + to_string(userID)))
+    unsigned long name_len = name.length();
+    bind[0].buffer_type = MYSQL_TYPE_STRING;
+    bind[0].buffer = (void*)name.c_str();
+    bind[0].buffer_length = name_len;
+    bind[0].length = &name_len;
+
+    if (mysql_stmt_bind_param(stmt, bind) != 0)
     {
-        return 1;
+        cerr << "Bind error: " << mysql_stmt_error(stmt) << endl;
+        mysql_stmt_close(stmt);
+        return -1;
     }
 
-    fstream file;
-
-    if (!fs::exists("Chats/" + to_string(chatID) + "/users.txt"))
+    if (mysql_stmt_execute(stmt) != 0)
     {
-        file.open("Chats/" + to_string(chatID) + "/users.txt");
-        file.close();
+        cerr << "Execute error: " << mysql_stmt_error(stmt) << endl;
+        mysql_stmt_close(stmt);
+        return -1;
     }
 
-    file.open("Chats/" + to_string(chatID) + "/users.txt", ios::out | ios::app);
-    file << userID << endl;
-    file.close();
-
-    return 0;
-}
-
-void ChatManager::AddMessage(int chatID, int userID, string message)
-{
-    fstream file;
-    string username;
-
-    if (!fs::exists("Chats/" + to_string(chatID) + "/messages.txt"))
+    if (mysql_stmt_store_result(stmt) != 0)
     {
-        file.open("Chats/" + to_string(chatID) + "/messages.txt");
-        file.close();
+        cerr << "Store result error: " << mysql_stmt_error(stmt) << endl;
+        mysql_stmt_close(stmt);
+        return -1;
     }
 
-    file.open("Users/" + to_string(userID) + "/name.txt", ios::in);
-    file >> username;
-    file.close();
+    int chat_id = -1;
 
-    file.open("Chats/" + to_string(chatID) + "/messages.txt", ios::out | ios::app);
-    file << username << " > " << message << endl;
-    file.close();
-}
+    MYSQL_BIND result_bind[1];
+    memset(result_bind, 0, sizeof(result_bind));
 
-vector<string> ChatManager::GetMessages(int chatID)
-{
-    fstream file;
-    vector<string> messages;
+    result_bind[0].buffer_type = MYSQL_TYPE_LONG;
+    result_bind[0].buffer = &chat_id;
 
-    file.open("Chats/" + to_string(chatID) + "/messages.txt", ios::in);
-    string message;
-    while (getline(file, message))
+    if (mysql_stmt_bind_result(stmt, result_bind) != 0)
     {
-        messages.push_back(message);
+        cerr << "Bind result error: " << mysql_stmt_error(stmt) << endl;
+        mysql_stmt_close(stmt);
+        return -1;
     }
-    file.close();
 
-    return messages;
+    if (mysql_stmt_fetch(stmt) != 0)
+    {
+        chat_id = -1;
+    }
+
+    mysql_stmt_close(stmt);
+    return chat_id;
 }

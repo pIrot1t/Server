@@ -18,7 +18,7 @@ UserManager::UserManager()
         return;
 	}
  
-	if (!mysql_real_connect(&mysql, "localhost", "root", db_password, "testdb", NULL, NULL, 0)) 
+	if (!mysql_real_connect(&mysql, "localhost", "root", db_password, "myMessenger", NULL, NULL, 0)) 
     {
 		cout << "Error: can't connect to database " << mysql_error(&mysql) << endl;
         return;
@@ -43,7 +43,7 @@ UserManager::~UserManager()
 
 int UserManager::Register(string name, string pass_hash)
 {
-    const char* sql = "INSERT INTO users (name, pass_hash) VALUES (?, ?)";
+    const char* sql = "INSERT INTO users (name, password_hash) VALUES (?, ?)";
     MYSQL_STMT* stmt = mysql_stmt_init(&mysql);
     if (!stmt)
     {
@@ -98,7 +98,7 @@ int UserManager::Register(string name, string pass_hash)
 
 int UserManager::Authoriz(string name, string pass_hash)
 {
-    const char* sql = "SELECT id FROM users WHERE name = ? AND pass_hash = ?";
+    const char* sql = "SELECT id FROM users WHERE name = ? AND password_hash = ?";
 
     MYSQL_STMT* stmt = mysql_stmt_init(&mysql);
     if (!stmt)
@@ -175,7 +175,7 @@ int UserManager::Authoriz(string name, string pass_hash)
 
 int UserManager::Deleteac(string name, string pass_hash)
 {
-    const char* sql = "DELETE FROM users WHERE name = ? AND pass_hash = ?";
+    const char* sql = "DELETE FROM users WHERE name = ? AND password_hash = ?";
     MYSQL_STMT* stmt = mysql_stmt_init(&mysql);
     if (!stmt)
     {

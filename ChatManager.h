@@ -1,12 +1,21 @@
 #pragma once
+#include <iostream>
 #include <string>
 #include <vector>
+#include <mysql/mysql.h>
 
 class ChatManager
 {
+private:
+    
+    MYSQL mysql;
+    bool connected = false;
+
 public:
 
     ChatManager();
+
+    ~ChatManager();
 
     int CreateChat(std::string chatName);
 
@@ -18,7 +27,7 @@ public:
 
     int AddUserToChat(int chatID, int userID);
 
-    void AddMessage(int chatID, int userID, std::string message);
+    int AddMessage(int chatID, int userID, std::string message);
 
     std::vector<std::string> GetMessages(int chatID);
 };

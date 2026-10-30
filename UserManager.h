@@ -1,6 +1,7 @@
 #pragma once
 #include <iostream>
 #include <string>
+#include <cstring>
 #include <mysql/mysql.h>
 
 class UserManager
@@ -8,8 +9,6 @@ class UserManager
 private:
 
     MYSQL mysql;
-    MYSQL_RES* res;
-    MYSQL_ROW row;
     bool connected = false;
 
 public:
