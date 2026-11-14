@@ -15,6 +15,7 @@ private:
     socklen_t length;
     int socket_file_descriptor, connection, bind_status, connection_status;
     char message[MESSAGE_LENGTH];
+    std::string buffer;
 
 public:
     bool StartServer();

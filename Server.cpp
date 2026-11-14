@@ -65,18 +65,43 @@ void Server::StopServer()
 
 string Server::GetMessage()
 {
-    bzero(message, MESSAGE_LENGTH);
-    read(connection, message, sizeof(message));
-    return message;
+    size_t end;
+
+    while ((end = buffer.find('\n')) == string::npos)
+    {
+        ssize_t bytes = read(connection, message, sizeof(message));
+
+        if (bytes <= 0)
+        {
+            buffer.clear();
+            return "";
+        }
+
+        buffer.append(message, bytes);
+    }
+
+    string line = buffer.substr(0, end + 1);
+    buffer.erase(0, end + 1);
+    return line;
 }
 
 void Server::SendMessage(const char *_message)
 {
-    bzero(message, MESSAGE_LENGTH);
-    strncpy(message, _message, MESSAGE_LENGTH - 1);
-    ssize_t bytes = write(connection, message, sizeof(message));
-    if (bytes >= 0)
+    size_t total = strlen(_message);
+    size_t sent = 0;
+
+    while (sent < total)
     {
-        cout << "Data successfully sent to the client" << endl;
+        ssize_t bytes = write(connection, _message + sent, total - sent);
+
+        if (bytes <= 0)
+        {
+            cout << "Failed to send data to the client" << endl;
+            return;
+        }
+
+        sent += bytes;
     }
+
+    cout << "Data successfully sent to the client" << endl;
 }
