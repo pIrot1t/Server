@@ -78,6 +78,13 @@ string Server::GetMessage()
         }
 
         buffer.append(message, bytes);
+
+        if (buffer.size() > MAX_LINE_LENGTH)
+        {
+            cout << "Client message is too long, closing connection" << endl;
+            buffer.clear();
+            return "";
+        }
     }
 
     string line = buffer.substr(0, end + 1);

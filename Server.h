@@ -6,6 +6,7 @@
 #include <unistd.h>
 
 #define MESSAGE_LENGTH 1024
+#define MAX_LINE_LENGTH 65536
 #define PORT 51111
 
 class Server
